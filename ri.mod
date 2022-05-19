@@ -24,6 +24,9 @@ NEURON { SUFFIX nothing }
 
 VERBATIM
 const char* secname();
+#ifndef _NrnThread
+#define _NrnThread NrnThread
+#endif
 ENDVERBATIM
 
 PROCEDURE scale_connection_coef(x, factor) {
