@@ -1,0 +1,701 @@
+
+use_load_balance = (load_balance_phase == 3 || load_balance_phase == 5 || load_balance_phase == 7)
+
+{load_file("nrngui.hoc")}
+{localloadfile("fortmap.hoc")}
+{localloadfile("hoc/parlib.hoc")}
+if (fakerank >= 0) pnm.myid += fakerank
+if (fakenhost >= 0) pnm.nhost = fakenhost
+// til the shift bug in the mod files are fixed (table depends on range variable)
+if (1) {
+usetable_naf2 = 0
+usetable_naf = 0
+usetable_naf_tcr = 0
+usetable_napf = 0
+usetable_napf_spinstell = 0
+usetable_napf_tcr = 0
+}
+
+calculate_mechanism_complexity(load_balance_phase == 1)
+if (load_balance_phase == 1) { pc.runworker() pc.done() quit() }
+
+if (load_balance_phase == 3) {
+	read_load_balance_info("splitbal")
+}else if (load_balance_phase == 5) {
+	read_wholecell_info(wholecell_prefix)
+}else if (load_balance_phase == 7) {
+	read_multisplit_info(multisplit_prefix)
+}
+
+{localloadfile("finit.hoc")}
+
+serial = 0 // override serial set in parlib.hoc
+pmesg = 1 && (pc.id == 0)
+small_model = 0 // 0 for full model, set to 1 for 40 cells each type
+if (use_load_balance) { use_traubexact = 0 } // cannot use with load balance
+{localloadfile("hoc/traubcon.hoc")}
+
+{localloadfile("cell_templates.hoc")}
+{localloadfile("net/network_specification_interface.hoc")}
+if (!serial) {localloadfile("hoc/parlib2.hoc")}
+{localloadfile("net/serial_or_par_wrapper.hoc")}
+{localloadfile("net/groucho.hoc")}
+
+proc cxrun() {localobj f
+	f = new File()
+	for pnm.serialize() {
+		f.aopen("cxrun.dat")
+		f.printf("%d %g\n", pnm.myid, tdat_.x[5])		
+		printf("%d %g\n", pnm.myid, tdat_.x[5])		
+		f.close
+	}
+	execerror("stop", "")
+}
+
+if (load_balance_phase == 2) {
+	print_single_split_load_balance_info("splitbal.dat")
+	pc.runworker() pc.done() quit()
+}else if (load_balance_phase == 4) {
+	print_wholecell_info(wholecell_prefix)
+	pc.runworker() pc.done() quit()
+}else if (load_balance_phase == 6) {
+	print_multisplit_info(multisplit_prefix, multisplit_nhost)
+	//execerror("stop", "")
+	pc.runworker() pc.done() quit()
+}else{
+	print_load_balance_info(0)
+	if (fakerank >= 0) {cxrun() pc.runworker() pc.done() quit()}
+}
+
+want_all_spikes()
+mkhist(50)
+
+strdef spkflnm
+{sprint(spkflnm,"data_stndbs_4.5hz/spikes/sn%d_%s",pc.id,varfn)}
+strdef EFfn
+{sprint(EFfn,"data_stndbs_4.5hz/cEP/lfp%d_%s",pc.id,varfn)}
+objref mycell, myout
+
+
+if (pc.id==0) {
+
+{cellobj(0+1+suppyrRS_base).position(-44.512115,-288.4502,-114.95464)}
+{cellobj(10+1+suppyrRS_base).position(-145.50232,-220.21071,-14.807648)}
+{cellobj(20+1+suppyrRS_base).position(-135.3015,-204.64691,-169.66325)}
+{cellobj(30+1+suppyrRS_base).position(192.85052,-380.24155,131.8406)}
+{cellobj(40+1+suppyrRS_base).position(108.23099,-193.19618,-28.88527)}
+{cellobj(50+1+suppyrRS_base).position(-69.961365,-306.46844,2.1382904)}
+{cellobj(60+1+suppyrRS_base).position(-126.76317,-349.0412,73.63861)}
+{cellobj(70+1+suppyrRS_base).position(17.876434,-392.57318,-184.23166)}
+{cellobj(80+1+suppyrRS_base).position(136.83975,-228.8243,-144.9664)}
+{cellobj(90+1+suppyrRS_base).position(217.10684,-253.37321,-104.511475)}
+{cellobj(0+1+suppyrFRB_base).position(-156.95486,-400.764,-123.508125)}
+{cellobj(5+1+supbask_base).position(74.24451,-303.23157,-116.1904)}
+{cellobj(6+1+supaxax_base).position(159.49203,-257.98602,13.694031)}
+{cellobj(7+1+supLTS_base).position(214.16748,-158.85056,-46.871277)}
+{cellobj(8+1+spinstell_base).position(-22.593521,-563.0592,-41.60768)}
+{cellobj(18+1+spinstell_base).position(-6.535553,-555.41614,200.11716)}
+{cellobj(4+1+tuftIB_base).position(78.0199,-836.77795,101.45422)}
+{cellobj(14+1+tuftIB_base).position(-169.05656,-699.5257,-149.94627)}
+{cellobj(24+1+tuftIB_base).position(-196.14322,-618.99036,-32.26822)}
+{cellobj(34+1+tuftIB_base).position(80.63248,-638.4526,-74.20749)}
+{cellobj(44+1+tuftIB_base).position(-54.30832,-827.1747,197.49628)}
+{cellobj(54+1+tuftIB_base).position(137.82693,-639.1483,130.69128)}
+{cellobj(64+1+tuftIB_base).position(68.75949,-844.56793,-17.526062)}
+{cellobj(74+1+tuftIB_base).position(-49.62796,-765.1999,74.91901)}
+{cellobj(4+1+tuftRS_base).position(124.57022,-618.96594,149.29999)}
+{cellobj(14+1+tuftRS_base).position(43.805298,-653.1101,33.729034)}
+{cellobj(4+1+nontuftRS_base).position(218.09546,-1009.473,32.800903)}
+{cellobj(14+1+nontuftRS_base).position(8.876709,-1138.5392,-53.26706)}
+{cellobj(24+1+nontuftRS_base).position(83.76218,-1109.6981,-60.14583)}
+{cellobj(34+1+nontuftRS_base).position(-198.64621,-1117.9581,71.15402)}
+{cellobj(44+1+nontuftRS_base).position(61.173462,-945.93115,-135.42253)}
+{cellobj(4+1+deepbask_base).position(-58.878723,-975.1914,75.24432)}
+{cellobj(4+1+deepaxax_base).position(-94.66106,-970.7941,-111.01932)}
+{cellobj(4+1+deepLTS_base).position(108.40741,-894.9059,109.813965)}
+
+}
+
+if (pc.id==1) {
+
+{cellobj(1+1+suppyrRS_base).position(68.994415,-323.27646,-14.015701)}
+{cellobj(11+1+suppyrRS_base).position(18.292847,-289.65424,174.90448)}
+{cellobj(21+1+suppyrRS_base).position(-178.39426,-265.50873,94.67468)}
+{cellobj(31+1+suppyrRS_base).position(101.04791,-395.51883,51.021423)}
+{cellobj(41+1+suppyrRS_base).position(101.486084,-355.88855,10.817566)}
+{cellobj(51+1+suppyrRS_base).position(-178.42412,-168.8311,-7.613861)}
+{cellobj(61+1+suppyrRS_base).position(91.3757,-372.4083,-85.61394)}
+{cellobj(71+1+suppyrRS_base).position(-34.240402,-395.0138,153.42978)}
+{cellobj(81+1+suppyrRS_base).position(-148.09134,-328.1176,30.76706)}
+{cellobj(91+1+suppyrRS_base).position(-108.53323,-348.2158,-104.65175)}
+{cellobj(1+1+suppyrFRB_base).position(-164.24054,-370.5981,-69.36952)}
+{cellobj(6+1+supbask_base).position(-158.46652,-382.36386,-42.164856)}
+{cellobj(7+1+supaxax_base).position(-50.27484,-301.5633,-211.1414)}
+{cellobj(8+1+supLTS_base).position(-21.251953,-345.3103,35.940063)}
+{cellobj(9+1+spinstell_base).position(96.36627,-575.9445,48.08081)}
+{cellobj(19+1+spinstell_base).position(-29.26123,-449.27667,-132.5968)}
+{cellobj(5+1+tuftIB_base).position(189.62802,-735.8586,-73.14259)}
+{cellobj(15+1+tuftIB_base).position(117.472565,-841.8336,103.7652)}
+{cellobj(25+1+tuftIB_base).position(-190.78674,-658.8572,76.383545)}
+{cellobj(35+1+tuftIB_base).position(125.56729,-660.4918,-157.31003)}
+{cellobj(45+1+tuftIB_base).position(124.32846,-846.2296,-135.93367)}
+{cellobj(55+1+tuftIB_base).position(-224.85104,-709.0252,-74.21399)}
+{cellobj(65+1+tuftIB_base).position(-11.948044,-672.041,-154.72537)}
+{cellobj(75+1+tuftIB_base).position(-72.33447,-684.8738,-97.51514)}
+{cellobj(5+1+tuftRS_base).position(-174.62653,-868.23486,149.90057)}
+{cellobj(15+1+tuftRS_base).position(-140.1789,-786.26465,-127.80177)}
+{cellobj(5+1+nontuftRS_base).position(-2.3267822,-1029.9238,41.108368)}
+{cellobj(15+1+nontuftRS_base).position(-149.65117,-931.544,-166.99469)}
+{cellobj(25+1+nontuftRS_base).position(2.737854,-944.37427,129.5622)}
+{cellobj(35+1+nontuftRS_base).position(139.0528,-1047.4943,20.605133)}
+{cellobj(45+1+nontuftRS_base).position(70.37601,-1093.0101,34.635742)}
+{cellobj(5+1+deepbask_base).position(21.539185,-861.45435,128.72955)}
+{cellobj(5+1+deepaxax_base).position(-27.389282,-921.52545,-48.059525)}
+{cellobj(5+1+deepLTS_base).position(138.80777,-986.3991,96.27374)}
+
+}
+
+if (pc.id==2) {
+
+{cellobj(2+1+suppyrRS_base).position(179.47092,-235.30777,90.582886)}
+{cellobj(12+1+suppyrRS_base).position(-77.83786,-264.79883,-163.27718)}
+{cellobj(22+1+suppyrRS_base).position(187.12158,-358.96988,71.77655)}
+{cellobj(32+1+suppyrRS_base).position(-30.081116,-398.27747,15.802948)}
+{cellobj(42+1+suppyrRS_base).position(59.244293,-288.63995,131.60889)}
+{cellobj(52+1+suppyrRS_base).position(-117.78175,-261.78137,-31.75563)}
+{cellobj(62+1+suppyrRS_base).position(-192.7281,-227.12466,109.69888)}
+{cellobj(72+1+suppyrRS_base).position(192.46738,-389.24713,-141.07066)}
+{cellobj(82+1+suppyrRS_base).position(-218.68802,-382.01306,50.41516)}
+{cellobj(92+1+suppyrRS_base).position(-174.01627,-299.2371,-59.132126)}
+{cellobj(2+1+suppyrFRB_base).position(208.9097,-210.0781,-67.696335)}
+{cellobj(7+1+supbask_base).position(-87.65546,-152.45306,12.745453)}
+{cellobj(8+1+supaxax_base).position(107.75458,-290.8464,-121.35678)}
+{cellobj(0+1+spinstell_base).position(169.83966,-529.1555,-42.448105)}
+{cellobj(10+1+spinstell_base).position(-85.590515,-515.0604,43.723236)}
+{cellobj(20+1+spinstell_base).position(-199.05829,-471.50555,-41.45851)}
+{cellobj(6+1+tuftIB_base).position(151.96622,-840.1419,8.837158)}
+{cellobj(16+1+tuftIB_base).position(-147.34137,-881.80615,145.34152)}
+{cellobj(26+1+tuftIB_base).position(-19.989044,-679.55334,-204.5564)}
+{cellobj(36+1+tuftIB_base).position(123.568146,-846.29596,133.84845)}
+{cellobj(46+1+tuftIB_base).position(-79.04553,-761.4092,-7.7606964)}
+{cellobj(56+1+tuftIB_base).position(145.07343,-646.3427,155.58759)}
+{cellobj(66+1+tuftIB_base).position(65.39566,-727.81995,53.72702)}
+{cellobj(76+1+tuftIB_base).position(46.77362,-843.9008,146.67194)}
+{cellobj(6+1+tuftRS_base).position(-234.89023,-885.0808,16.095093)}
+{cellobj(16+1+tuftRS_base).position(-189.71393,-735.0666,-41.17859)}
+{cellobj(6+1+nontuftRS_base).position(-132.27051,-980.01587,-59.431396)}
+{cellobj(16+1+nontuftRS_base).position(91.600525,-1137.418,82.22662)}
+{cellobj(26+1+nontuftRS_base).position(209.65414,-964.85516,-107.495605)}
+{cellobj(36+1+nontuftRS_base).position(40.78543,-995.0206,-100.35071)}
+{cellobj(46+1+nontuftRS_base).position(-17.825806,-1085.411,-129.22865)}
+{cellobj(6+1+deepbask_base).position(-99.12547,-847.9946,143.90317)}
+{cellobj(6+1+deepaxax_base).position(42.420197,-966.8096,224.35019)}
+{cellobj(6+1+deepLTS_base).position(15.332214,-1148.9395,54.78528)}
+
+}
+
+if (pc.id==3) {
+
+{cellobj(3+1+suppyrRS_base).position(124.32413,-403.38208,-52.37007)}
+{cellobj(13+1+suppyrRS_base).position(-18.705688,-351.05334,-96.59285)}
+{cellobj(23+1+suppyrRS_base).position(-192.9183,-216.90344,24.806152)}
+{cellobj(33+1+suppyrRS_base).position(209.57141,-265.71027,0.9079895)}
+{cellobj(43+1+suppyrRS_base).position(-120.7408,-284.13684,-86.69203)}
+{cellobj(53+1+suppyrRS_base).position(167.73544,-158.7547,147.04953)}
+{cellobj(63+1+suppyrRS_base).position(-153.64328,-399.0986,39.409546)}
+{cellobj(73+1+suppyrRS_base).position(-79.84674,-255.59511,104.3486)}
+{cellobj(83+1+suppyrRS_base).position(113.11914,-294.9369,-163.06604)}
+{cellobj(93+1+suppyrRS_base).position(32.249573,-316.66333,88.36044)}
+{cellobj(3+1+suppyrFRB_base).position(-128.30612,-283.4402,-135.36945)}
+{cellobj(8+1+supbask_base).position(-154.14392,-153.82675,-112.3139)}
+{cellobj(0+1+supLTS_base).position(-192.87914,-205.6247,2.924942)}
+{cellobj(1+1+spinstell_base).position(-127.72992,-475.59235,-191.25528)}
+{cellobj(11+1+spinstell_base).position(-190.19415,-476.65747,83.45566)}
+{cellobj(21+1+spinstell_base).position(145.9353,-510.97534,70.70108)}
+{cellobj(7+1+tuftIB_base).position(-89.45372,-876.51843,62.469727)}
+{cellobj(17+1+tuftIB_base).position(-161.53589,-670.386,96.44772)}
+{cellobj(27+1+tuftIB_base).position(191.3338,-688.72705,130.43369)}
+{cellobj(37+1+tuftIB_base).position(136.41486,-854.78754,-121.916794)}
+{cellobj(47+1+tuftIB_base).position(-176.14806,-841.45856,-135.97327)}
+{cellobj(57+1+tuftIB_base).position(-118.38248,-810.8505,-145.27336)}
+{cellobj(67+1+tuftIB_base).position(-187.63799,-768.273,59.58661)}
+{cellobj(77+1+tuftIB_base).position(-26.023056,-799.20197,94.34296)}
+{cellobj(7+1+tuftRS_base).position(43.439392,-684.13965,111.081604)}
+{cellobj(17+1+tuftRS_base).position(52.625214,-798.13525,-51.03064)}
+{cellobj(7+1+nontuftRS_base).position(-220.992,-1086.0061,-40.221542)}
+{cellobj(17+1+nontuftRS_base).position(-166.61322,-986.8065,122.15875)}
+{cellobj(27+1+nontuftRS_base).position(65.029755,-949.11255,145.70233)}
+{cellobj(37+1+nontuftRS_base).position(-87.13272,-1052.6566,-124.98233)}
+{cellobj(47+1+nontuftRS_base).position(-96.2941,-962.72754,203.77393)}
+{cellobj(7+1+deepbask_base).position(5.5352173,-1020.2709,-121.63446)}
+{cellobj(7+1+deepaxax_base).position(30.254364,-973.34186,-10.870789)}
+{cellobj(7+1+deepLTS_base).position(39.56491,-1122.4824,-196.44968)}
+}
+
+if (pc.id==4) {
+
+{cellobj(4+1+suppyrRS_base).position(98.752106,-364.10153,-125.56854)}
+{cellobj(14+1+suppyrRS_base).position(-87.05687,-192.50732,61.821014)}
+{cellobj(24+1+suppyrRS_base).position(-64.32623,-154.98987,150.29315)}
+{cellobj(34+1+suppyrRS_base).position(1.8048248,-231.54239,94.427826)}
+{cellobj(44+1+suppyrRS_base).position(15.808411,-216.94821,-15.397583)}
+{cellobj(54+1+suppyrRS_base).position(-12.730087,-194.41466,-55.478073)}
+{cellobj(64+1+suppyrRS_base).position(-66.63666,-306.2218,-205.39636)}
+{cellobj(74+1+suppyrRS_base).position(-72.452896,-194.97388,-164.8378)}
+{cellobj(84+1+suppyrRS_base).position(122.75421,-383.5863,75.01886)}
+{cellobj(94+1+suppyrRS_base).position(141.99344,-181.5438,-117.95476)}
+{cellobj(4+1+suppyrFRB_base).position(-42.396637,-149.96457,-42.46309)}
+{cellobj(0+1+supaxax_base).position(178.96814,-289.41034,110.760254)}
+{cellobj(1+1+supLTS_base).position(131.63782,-203.08685,176.23138)}
+{cellobj(2+1+spinstell_base).position(-159.3211,-464.59073,101.973755)}
+{cellobj(12+1+spinstell_base).position(-212.1289,-535.6038,-63.04187)}
+{cellobj(22+1+spinstell_base).position(-23.887451,-562.6368,210.99252)}
+{cellobj(8+1+tuftIB_base).position(-103.38289,-627.9229,206.94928)}
+{cellobj(18+1+tuftIB_base).position(79.63837,-650.8271,-143.29851)}
+{cellobj(28+1+tuftIB_base).position(-66.094635,-744.0808,-36.582047)}
+{cellobj(38+1+tuftIB_base).position(-160.64282,-703.6181,170.14218)}
+{cellobj(48+1+tuftIB_base).position(-170.16263,-757.1808,-133.4379)}
+{cellobj(58+1+tuftIB_base).position(86.01489,-655.0299,174.48502)}
+{cellobj(68+1+tuftIB_base).position(-155.52988,-704.3753,56.05435)}
+{cellobj(78+1+tuftIB_base).position(59.88083,-721.8711,44.103546)}
+{cellobj(8+1+tuftRS_base).position(-21.817947,-765.7508,222.31625)}
+{cellobj(18+1+tuftRS_base).position(-75.44386,-656.9469,-222.2128)}
+{cellobj(8+1+nontuftRS_base).position(-160.62756,-958.0924,-111.133194)}
+{cellobj(18+1+nontuftRS_base).position(180.78925,-979.0609,-93.10579)}
+{cellobj(28+1+nontuftRS_base).position(43.295105,-991.3267,-111.92349)}
+{cellobj(38+1+nontuftRS_base).position(-71.75595,-998.3766,-131.53905)}
+{cellobj(48+1+nontuftRS_base).position(108.18817,-1035.8062,72.9884)}
+{cellobj(8+1+deepbask_base).position(-23.858337,-623.3599,145.96631)}
+{cellobj(8+1+deepaxax_base).position(192.08014,-828.8218,-139.152)}
+{cellobj(8+1+deepLTS_base).position(-35.833084,-694.1981,-182.79611)}
+}
+
+if (pc.id==5) {
+
+{cellobj(5+1+suppyrRS_base).position(-236.24727,-172.82602,-25.865707)}
+{cellobj(15+1+suppyrRS_base).position(73.28134,-293.8255,-163.48868)}
+{cellobj(25+1+suppyrRS_base).position(64.7941,-263.2544,93.819214)}
+{cellobj(35+1+suppyrRS_base).position(-38.21698,-263.21857,-69.20654)}
+{cellobj(45+1+suppyrRS_base).position(38.99829,-369.40497,-21.041122)}
+{cellobj(55+1+suppyrRS_base).position(-68.841995,-340.7058,115.77716)}
+{cellobj(65+1+suppyrRS_base).position(194.66357,-201.30254,117.394135)}
+{cellobj(75+1+suppyrRS_base).position(129.2619,-337.289,-60.785767)}
+{cellobj(85+1+suppyrRS_base).position(-138.5597,-374.31003,116.97742)}
+{cellobj(95+1+suppyrRS_base).position(-22.920853,-363.87576,182.52454)}
+{cellobj(0+1+supbask_base).position(152.08752,-291.98145,160.8977)}
+{cellobj(1+1+supaxax_base).position(-187.5162,-407.77753,139.54092)}
+{cellobj(2+1+supLTS_base).position(-102.83035,-290.70178,-50.14917)}
+{cellobj(3+1+spinstell_base).position(235.24823,-526.622,-4.7712555)}
+{cellobj(13+1+spinstell_base).position(-48.148605,-489.66913,37.554535)}
+{cellobj(23+1+spinstell_base).position(100.35077,-473.23807,-193.3499)}
+{cellobj(9+1+tuftIB_base).position(-192.38147,-703.9649,-88.43263)}
+{cellobj(19+1+tuftIB_base).position(65.38684,-884.8892,-200.54817)}
+{cellobj(29+1+tuftIB_base).position(154.06467,-787.8104,151.6236)}
+{cellobj(39+1+tuftIB_base).position(-140.93365,-805.6212,-108.96811)}
+{cellobj(49+1+tuftIB_base).position(42.263214,-790.8118,-81.60901)}
+{cellobj(59+1+tuftIB_base).position(49.737152,-675.701,209.69574)}
+{cellobj(69+1+tuftIB_base).position(96.40518,-619.34814,-115.40503)}
+{cellobj(79+1+tuftIB_base).position(-91.166885,-664.0139,-41.509003)}
+{cellobj(9+1+tuftRS_base).position(101.091034,-793.453,-107.528564)}
+{cellobj(19+1+tuftRS_base).position(-108.076965,-872.0788,35.979187)}
+{cellobj(9+1+nontuftRS_base).position(-89.277176,-948.9118,194.26407)}
+{cellobj(19+1+nontuftRS_base).position(-52.27301,-1059.9326,11.370728)}
+{cellobj(29+1+nontuftRS_base).position(211.00934,-1034.2402,77.30121)}
+{cellobj(39+1+nontuftRS_base).position(104.75632,-1013.7155,158.7291)}
+{cellobj(49+1+nontuftRS_base).position(-109.70482,-943.174,-145.20442)}
+{cellobj(9+1+deepbask_base).position(-33.469376,-695.4746,209.22116)}
+{cellobj(9+1+deepaxax_base).position(-101.236755,-714.9677,40.61609)}
+{cellobj(9+1+deepLTS_base).position(194.89938,-891.0918,-53.14096)}
+}
+
+if (pc.id==6) {
+
+{cellobj(6+1+suppyrRS_base).position(-52.99437,-398.5226,-55.35251)}
+{cellobj(16+1+suppyrRS_base).position(-45.272827,-317.17487,48.98886)}
+{cellobj(26+1+suppyrRS_base).position(96.607086,-295.3405,-26.212448)}
+{cellobj(36+1+suppyrRS_base).position(215.18774,-230.5534,81.26071)}
+{cellobj(46+1+suppyrRS_base).position(154.82846,-410.43585,53.566498)}
+{cellobj(56+1+suppyrRS_base).position(79.471954,-202.9715,71.767395)}
+{cellobj(66+1+suppyrRS_base).position(-80.20845,-167.40244,10.435455)}
+{cellobj(76+1+suppyrRS_base).position(65.267426,-297.422,16.033325)}
+{cellobj(86+1+suppyrRS_base).position(-13.948288,-412.11792,-111.832855)}
+{cellobj(96+1+suppyrRS_base).position(165.8465,-302.02692,107.811066)}
+{cellobj(1+1+supbask_base).position(47.601868,-345.09476,-178.77493)}
+{cellobj(2+1+supaxax_base).position(-33.920883,-370.24637,86.003204)}
+{cellobj(3+1+supLTS_base).position(-28.608917,-175.11717,144.9473)}
+{cellobj(4+1+spinstell_base).position(27.2471,-464.26617,-102.36705)}
+{cellobj(14+1+spinstell_base).position(-148.65527,-494.55273,-121.96129)}
+{cellobj(0+1+tuftIB_base).position(-36.6604,-830.51117,129.85641)}
+{cellobj(10+1+tuftIB_base).position(-146.91455,-718.305,-28.762726)}
+{cellobj(20+1+tuftIB_base).position(41.406097,-853.04004,-95.57727)}
+{cellobj(30+1+tuftIB_base).position(-40.81604,-676.40857,33.422485)}
+{cellobj(40+1+tuftIB_base).position(195.84476,-739.5792,52.64789)}
+{cellobj(50+1+tuftIB_base).position(140.78223,-625.59644,14.255463)}
+{cellobj(60+1+tuftIB_base).position(-61.9534,-736.9823,-112.03995)}
+{cellobj(70+1+tuftIB_base).position(-213.94516,-746.3823,45.427032)}
+{cellobj(0+1+tuftRS_base).position(60.62802,-845.1657,-212.0198)}
+{cellobj(10+1+tuftRS_base).position(86.08771,-744.1259,-80.44627)}
+{cellobj(0+1+nontuftRS_base).position(219.09631,-1040.8064,5.50264)}
+{cellobj(10+1+nontuftRS_base).position(-211.16922,-1037.3053,47.343628)}
+{cellobj(20+1+nontuftRS_base).position(15.759674,-955.5591,184.6611)}
+{cellobj(30+1+nontuftRS_base).position(-163.50827,-1006.9297,-118.95537)}
+{cellobj(40+1+nontuftRS_base).position(-152.48703,-935.14417,-146.85544)}
+{cellobj(0+1+deepbask_base).position(134.89114,-1129.7101,109.65463)}
+{cellobj(0+1+deepaxax_base).position(-102.61711,-989.62085,146.49225)}
+{cellobj(0+1+deepLTS_base).position(-181.62862,-725.19366,99.47745)}
+}
+
+if (pc.id==7) {
+
+{cellobj(7+1+suppyrRS_base).position(-227.54813,-389.76407,35.841705)}
+{cellobj(17+1+suppyrRS_base).position(-215.66379,-346.17078,-48.791077)}
+{cellobj(27+1+suppyrRS_base).position(-48.746887,-203.10272,-200.02762)}
+{cellobj(37+1+suppyrRS_base).position(-20.012741,-303.6207,210.13269)}
+{cellobj(47+1+suppyrRS_base).position(-146.03772,-219.42467,113.37216)}
+{cellobj(57+1+suppyrRS_base).position(-21.330948,-396.10345,31.360016)}
+{cellobj(67+1+suppyrRS_base).position(-132.14946,-406.86987,1.4658508)}
+{cellobj(77+1+suppyrRS_base).position(214.16537,-308.23615,46.559998)}
+{cellobj(87+1+suppyrRS_base).position(-147.29628,-258.51453,-45.11299)}
+{cellobj(97+1+suppyrRS_base).position(156.49191,-313.1885,147.50076)}
+{cellobj(2+1+supbask_base).position(-89.63675,-341.47693,217.05347)}
+{cellobj(3+1+supaxax_base).position(68.20105,-258.93094,-55.62967)}
+{cellobj(4+1+supLTS_base).position(118.05646,-264.18546,181.125)}
+{cellobj(5+1+spinstell_base).position(46.67325,-519.0077,-117.02469)}
+{cellobj(15+1+spinstell_base).position(-195.25378,-542.5956,-39.288727)}
+{cellobj(1+1+tuftIB_base).position(219.2601,-858.19434,-52.240494)}
+{cellobj(11+1+tuftIB_base).position(35.695953,-784.55524,25.55304)}
+{cellobj(21+1+tuftIB_base).position(75.15445,-618.1416,-22.292969)}
+{cellobj(31+1+tuftIB_base).position(-22.743912,-738.84265,-8.766418)}
+{cellobj(41+1+tuftIB_base).position(209.3937,-639.43274,-93.486786)}
+{cellobj(51+1+tuftIB_base).position(-109.484726,-676.0025,-9.058975)}
+{cellobj(61+1+tuftIB_base).position(-109.13437,-760.6489,60.2146)}
+{cellobj(71+1+tuftIB_base).position(-64.631134,-788.185,-178.20758)}
+{cellobj(1+1+tuftRS_base).position(141.34012,-639.1433,165.97919)}
+{cellobj(11+1+tuftRS_base).position(-110.87442,-827.11743,120.52722)}
+{cellobj(1+1+nontuftRS_base).position(134.84555,-971.20386,34.27652)}
+{cellobj(11+1+nontuftRS_base).position(160.74902,-1138.1492,-169.16559)}
+{cellobj(21+1+nontuftRS_base).position(-77.09485,-1022.1752,11.946777)}
+{cellobj(31+1+nontuftRS_base).position(-43.45897,-984.1762,162.8276)}
+{cellobj(41+1+nontuftRS_base).position(8.591034,-1027.1497,-158.57628)}
+{cellobj(1+1+deepbask_base).position(-38.371063,-1023.3246,-168.47298)}
+{cellobj(1+1+deepaxax_base).position(-12.610107,-670.186,178.07077)}
+{cellobj(1+1+deepLTS_base).position(92.83136,-933.1782,182.67685)}
+}
+
+if (pc.id==8) {
+
+{cellobj(8+1+suppyrRS_base).position(-6.2918396,-371.45084,1.7204895)}
+{cellobj(18+1+suppyrRS_base).position(-58.95198,-282.09738,52.08609)}
+{cellobj(28+1+suppyrRS_base).position(-20.593643,-410.2902,233.2948)}
+{cellobj(38+1+suppyrRS_base).position(233.76474,-325.59888,-35.119415)}
+{cellobj(48+1+suppyrRS_base).position(-66.00493,-264.26474,188.33221)}
+{cellobj(58+1+suppyrRS_base).position(-137.58817,-157.91101,-160.63086)}
+{cellobj(68+1+suppyrRS_base).position(84.18094,-338.64685,-61.158386)}
+{cellobj(78+1+suppyrRS_base).position(237.19342,-158.10431,-34.765366)}
+{cellobj(88+1+suppyrRS_base).position(52.226593,-293.60968,-232.09322)}
+{cellobj(98+1+suppyrRS_base).position(-23.374344,-358.63232,-181.38922)}
+{cellobj(3+1+supbask_base).position(-189.1579,-320.62097,-135.13681)}
+{cellobj(4+1+supaxax_base).position(96.71661,-227.45592,108.11261)}
+{cellobj(5+1+supLTS_base).position(-84.358246,-219.7473,145.2114)}
+{cellobj(6+1+spinstell_base).position(74.897675,-530.70874,-86.166626)}
+{cellobj(16+1+spinstell_base).position(38.14041,-457.47403,212.74478)}
+{cellobj(2+1+tuftIB_base).position(-93.41928,-714.5586,-125.02783)}
+{cellobj(12+1+tuftIB_base).position(-200.82271,-640.6656,109.017914)}
+{cellobj(22+1+tuftIB_base).position(81.15152,-783.77527,194.80649)}
+{cellobj(32+1+tuftIB_base).position(168.16122,-680.93475,99.41202)}
+{cellobj(42+1+tuftIB_base).position(-9.755112,-637.8563,33.9227)}
+{cellobj(52+1+tuftIB_base).position(229.28683,-785.97003,-15.307159)}
+{cellobj(62+1+tuftIB_base).position(-65.94896,-881.9538,-102.2256)}
+{cellobj(72+1+tuftIB_base).position(-125.36806,-819.0406,181.97366)}
+{cellobj(2+1+tuftRS_base).position(161.41138,-884.677,-160.32712)}
+{cellobj(12+1+tuftRS_base).position(-7.0632935,-838.073,-35.075165)}
+{cellobj(2+1+nontuftRS_base).position(186.94318,-1131.5116,100.75433)}
+{cellobj(12+1+nontuftRS_base).position(135.7898,-1107.9749,-175.47324)}
+{cellobj(22+1+nontuftRS_base).position(166.99344,-1089.072,161.3074)}
+{cellobj(32+1+nontuftRS_base).position(120.88605,-1067.228,8.405853)}
+{cellobj(42+1+nontuftRS_base).position(-58.316803,-936.1247,33.18286)}
+{cellobj(2+1+deepbask_base).position(-90.12013,-973.34143,-166.91757)}
+{cellobj(2+1+deepaxax_base).position(-172.30447,-820.93677,-74.38582)}
+{cellobj(2+1+deepLTS_base).position(-17.829681,-864.9778,-50.255127)}
+}
+
+
+if (pc.id==9) {
+
+{cellobj(9+1+suppyrRS_base).position(-159.25392,-213.4815,156.3353)}
+{cellobj(19+1+suppyrRS_base).position(-213.35286,-203.89073,-86.19899)}
+{cellobj(29+1+suppyrRS_base).position(-194.89127,-352.53445,87.13684)}
+{cellobj(39+1+suppyrRS_base).position(-92.621,-275.01697,45.2948)}
+{cellobj(49+1+suppyrRS_base).position(-26.372635,-149.01727,-169.94473)}
+{cellobj(59+1+suppyrRS_base).position(160.40598,-232.81796,70.38031)}
+{cellobj(69+1+suppyrRS_base).position(42.519043,-176.03412,-19.157562)}
+{cellobj(79+1+suppyrRS_base).position(148.78506,-409.26126,127.90997)}
+{cellobj(89+1+suppyrRS_base).position(67.1264,-196.00475,-200.42554)}
+{cellobj(99+1+suppyrRS_base).position(61.496613,-314.1683,-118.114)}
+{cellobj(4+1+supbask_base).position(10.2022705,-396.62012,110.900085)}
+{cellobj(5+1+supaxax_base).position(77.77939,-253.36414,-181.87729)}
+{cellobj(6+1+supLTS_base).position(-171.59875,-166.63857,86.82529)}
+{cellobj(7+1+spinstell_base).position(-188.31816,-560.7106,16.128479)}
+{cellobj(17+1+spinstell_base).position(200.75809,-549.9547,19.186127)}
+{cellobj(3+1+tuftIB_base).position(135.90906,-703.06354,114.50885)}
+{cellobj(13+1+tuftIB_base).position(94.49484,-809.6877,160.43756)}
+{cellobj(23+1+tuftIB_base).position(106.94144,-843.64246,-150.78964)}
+{cellobj(33+1+tuftIB_base).position(-75.33687,-621.7193,-122.76798)}
+{cellobj(43+1+tuftIB_base).position(-46.034363,-740.89215,-11.240448)}
+{cellobj(53+1+tuftIB_base).position(-80.13794,-793.63477,131.2351)}
+{cellobj(63+1+tuftIB_base).position(-183.42903,-791.0033,-95.1263)}
+{cellobj(73+1+tuftIB_base).position(-13.78157,-808.69727,-193.53888)}
+{cellobj(3+1+tuftRS_base).position(152.53763,-814.7815,121.312195)}
+{cellobj(13+1+tuftRS_base).position(32.099823,-653.6317,-45.214386)}
+{cellobj(3+1+nontuftRS_base).position(44.525085,-922.9777,-181.67838)}
+{cellobj(13+1+nontuftRS_base).position(-65.15294,-942.43054,154.87137)}
+{cellobj(23+1+nontuftRS_base).position(-95.77838,-924.4336,211.35254)}
+{cellobj(33+1+nontuftRS_base).position(-172.29071,-1130.7512,-48.507782)}
+{cellobj(43+1+nontuftRS_base).position(-99.40213,-1059.1367,-170.25143)}
+{cellobj(3+1+deepbask_base).position(117.38614,-830.5193,193.96368)}
+{cellobj(3+1+deepaxax_base).position(96.990906,-889.8239,25.414703)}
+{cellobj(3+1+deepLTS_base).position(198.8294,-1076.7863,65.44812)}
+}
+
+
+
+
+
+
+
+
+objref fihprog_
+// if (pc.id == 0 && pc.nhost < 130) fihprog_ = new FInitializeHandler("progress()")
+
+fihprog_ = new FInitializeHandler("progress()")
+
+proc progress() {
+
+	if (pc.id == 0) {
+
+	print "t=",t
+	
+	}
+	
+	myout = new File()
+	if (t == 0){
+		myout.wopen(spkflnm)
+	} else {myout.aopen(spkflnm)}
+	for i=0, pnm.idvec.size-1 {
+		id = pnm.idvec.x[i]
+		//print "id: ", id
+		mycell = pc.gid2cell(id)
+		//print pnm.spikevec.x[i]
+        	myout.printf("%g\t%d\n", pnm.spikevec.x[i], id)
+	}
+	myout.close
+	pnm.spikevec.resize(0)
+	pnm.idvec.resize(0)
+	
+	myout = new File()
+	if (t == 0) {
+    		myout.wopen(EFfn)
+	} else {myout.aopen(EFfn)}
+    	for i=0, EFtvec.size-1 {
+		myout.printf("%g %g\n", EFtvec.x[i], EF[0].x[i])
+    	}
+    	myout.close()
+
+	EF[0].resize(0)
+	EFtvec.resize(0)
+	
+	cvode.event(t+1000, "progress()")
+	if (t == 0) {layer5_cur_inj()
+	calEF1()}
+}
+
+proc calEF1(){local depth localobj c
+	//print "In cal EF at ", pc.id
+	for i=0, 11 { efmm[i] = 0}
+	for i=0, cells.count-1 {
+		//c = pc.gid2cell(i)
+		c = cells.object(i)
+		if (strcmp(c.name,"suppyrRS") == 0){
+			for j=1, 74 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2))
+				c.comp[j] ar1=area(0.5) 				
+				efmm[0] = efmm[0] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"suppyrFRB") == 0){
+			for j=1, 74 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[1] = efmm[1] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"supbask") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[2] = efmm[2] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"supaxax") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[3] = efmm[3] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"supLTS") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[4] = efmm[4] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"spinstell") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[5] = efmm[5] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"tuftIB") == 0){
+			for j=1, 61 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[6] = efmm[6] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"tuftRS") == 0){
+			for j=1, 61 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[7] = efmm[7] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"nontuftRS") == 0){
+			for j=1, 50 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[8] = efmm[8] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"deepbask") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2))
+                c.comp[j] ar1=area(0.5)				
+				efmm[9] = efmm[9] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"deepaxax") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[10] = efmm[10] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		if (strcmp(c.name,"deepLTS") == 0){
+			for j=1, 59 {
+				c.comp[j] rdist1=sqrt(((jEFP1x-x3d(1))^2)+((jEFP1y-y3d(1))^2)+((jEFP1z-z3d(1))^2)) 
+				c.comp[j] ar1=area(0.5)
+				efmm[11] = efmm[11] + (((c.comp[j].i_membrane(0.5))*(ar1*(1e-4)^2))/(4*PI*sigmae*rdist1))
+			}
+		}
+		
+		
+				
+	}
+	
+	
+	efm[0]=efmm[0]+efmm[1]+efmm[2]+efmm[3]+efmm[4]+efmm[5]+efmm[6]+efmm[7]+efmm[8]+efmm[9]+efmm[10]+efmm[11]
+
+	EFtvec.append(t)
+	EF[0].append(efm[0])
+	cvode.event(t+dt, "calEF1()")
+
+}
+
+
+
+    objref stim1[10]
+    objref c3
+	ktt=0
+	for i=0, cells.count-1 {
+		//c = pc.gid2cell(i)
+		c3 = cells.object(i)
+		if (strcmp(c3.name,"tuftIB") == 0){
+		c3.comp[61] stim1[ktt]=new IClamp(0.5)
+	    c3.comp[61] stim1[ktt].del = 0
+		c3.comp[61] stim1[ktt].dur = 1000000	
+        ktt=ktt+1		
+
+
+}
+
+        if (strcmp(c3.name,"tuftRS") == 0){
+		c3.comp[61] stim1[ktt]=new IClamp(0.5)
+        c3.comp[61] stim1[ktt].del = 0
+		c3.comp[61] stim1[ktt].dur = 1000000	
+        ktt=ktt+1		
+
+
+}
+
+}
+
+	proc layer5_cur_inj(){localobj c4
+	kt=0
+	for i=0, cells.count-1 {
+		//c = pc.gid2cell(i)
+		c4 = cells.object(i)
+		if (strcmp(c4.name,"tuftIB") == 0){
+		c4.comp[61] stim1[kt].amp = IN_MATRIX.getval(kt,t/dt)
+		
+		kt=kt+1
+		}
+
+        if (strcmp(c4.name,"tuftRS") == 0){
+		c4.comp[61] stim1[kt].amp = IN_MATRIX.getval(kt,t/dt)
+		
+		kt=kt+1
+		}
+		}
+cvode.event(t+dt, "layer5_cur_inj()")
+}
+
+
+
+
+
+if (nthread > 1 && pc.nhost == 1) { pc.nthread(nthread, 1) }
+
+if (use_traubexact) {
+	localloadfile("hoc/traubcon_net.hoc")
+	if (pc.id == 0) {
+		print "before setting traub exact connection coefficients, setuptime = ", startsw() - setuptime
+	}
+	define_shape() // force all internal structures to be valid
+	reset_connection_coefficients()
+}
+
+proc methods() {
+	pc.spike_compress(spike_compress, spike_compress != 0, multisend)
+	cvode.queue_mode(spike_compress != 0, selfevents)
+	cvode.cache_efficient(cacheeffic)
+}
+methods()
+
+if (load_balance_phase == 7) { pc.multisplit() }
+
+setuptime = startsw() - setuptime
+if (pc.id == 0) {print "SetupTime: ", setuptime}
+

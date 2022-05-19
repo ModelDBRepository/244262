@@ -1,0 +1,788 @@
+ // Trying to open ../diagnostic/tstop.dat
+ // new end time timtot =   150.
+ // Trying to open ../diagnostic/dt_F.dat
+ // new dt =  0.002
+ /* supbask/supbask_template.hoc
+ automatically written from f2nrn/neuron_code_writer.f
+ via subroutines that were inserted into the fortran
+ code e.g., supbask/integrate_supbask.hoc
+ 
+ The template's form was derived by
+ Tom Morse and Michael Hines
+ from a template, pyr3_template created
+ by Roger Traub and Maciej Lazarewicz when they ported
+ 
+         Traub RD, Buhl EH, Gloveli T, Whittington MA.
+ Fast Rhythmic Bursting Can Be Induced in Layer 2/3
+ Cortical Neurons by Enhancing Persistent Na(+)
+ Conductance or by Blocking BK Channels.J Neurophysiol.
+ 2003 Feb;89(2):909-21.
+ 
+ to NEURON
+ 
+ */
+ 
+ begintemplate supbask
+	public type
+    	public name
+    	strdef name
+ 
+ // parts of the template were lifted from a default
+ // cell writing from Network Builder NetGUI[0]
+ 
+         public is_art
+         public init, topol, basic_shape, subsets
+         public geom, biophys 
+         public synlist, x, y, z, position
+         public connect2target
+         public set_netcon_src_comp
+         // the above function added to set neton
+         // compartment source in the presyn cell
+ 
+         public comp, level, Soma, Dendrites
+         public Soma_Dendrites, Axon, all
+         public presyn_comp, top_level
+         // it is the responsibility of the calling
+         // program to set the above presynaptic
+         // compartment number
+ 
+         external traub_connect
+         objref this
+  create  comp[ 59+1]
+         objref level[ 9+1], Soma, Dendrites
+         objref Soma_Dendrites, Axon
+         objref synlist
+func type() {return   2 }
+
+         proc init() {
+           doubler = 1
+  comp[0] delete_section() // clean up for fortran code
+            traub_connect( 59+1)
+ 
+            titlePrint()
+ 
+            presyn_comp = 59
+            // in Traub model;changed by calling prog.
+            objref Soma, Axon, Dendrites, Soma_Dendrites
+            objref level
+ 
+            topol()
+            shape()
+ 
+            geom()        // the geometry and
+            subsets()        // subsets and
+            biophys()  // active currents
+            synlist = new List() // list of synapses
+ // NetGUI[0] stores synapses in the cell object, in 
+ // Traub model it is easier to store them outside
+            set_doubler() // to double or not
+            if (doubler) {double_dend_cond()}
+                          /* for taking
+  spine membrane area correction into account (the 
+  method used doubles max cond's when spines present)
+ */
+             more_adjustments()
+	name = "supbask"
+         }
+         proc double_dend_cond() {
+         /* this function gets replaced later with 
+ another one if double_dend_cond() is tacked on. */
+         }
+ 
+         proc titlePrint() {
+ 
+ /*              print "
+                 print "-----"
+                 print "
+             print "supbask Neuron Model based on "
+             print "Traub RD et al (2005, 2003)"
+                 print "
+                 print "-----"
+ Remove title printing with this comment for now.  
+ Printing otherwise repeats (for each cell)
+ -too voluminous for a network creation */
+         }
+ 
+         proc set_doubler() {doubler=0}
+         // this function gets replaced with one that
+         // sets doubler to 0 when there are no spines
+         // in the cell (for no spines the additional
+         // hoc code is written from integrate_cell.f
+         // where cell is nRT, TCR.  Woops I just
+         // found that deepaxax, deepbask, deepLTS,
+         // supaxax, supbask, supLTS all use the script
+         // cell/run_fortran.sh to replace the =1's with
+         // =0's.  I will change the fortran code to
+         // make it all run_fortran.sh replacements or
+         // not for uniformity.
+         proc topol() {
+ // create comp[ 60] // note one greater than numcomp due to fortran indicies
+  // last argument, parent location for connection
+  // is overwritten to 1 for parents with connected children 
+  // in below traub_connect proc calls
+ traub_connect(this,  1,  54,   0.0611490233, 0)
+ traub_connect(this,  1,  2,   0.0873746044, 1)
+ traub_connect(this,  1,  15,   0.0873746044, 1)
+ traub_connect(this,  1,  28,   0.0873746044, 1)
+ traub_connect(this,  1,  41,   0.0873746044, 1)
+ traub_connect(this,  2,  3,   0.0250126876, 1)
+ traub_connect(this,  2,  4,   0.0250126876, 1)
+ traub_connect(this,  3,  4,   0.0174532778, 1)
+ traub_connect(this,  3,  5,   0.00988321907, 1)
+ traub_connect(this,  3,  6,   0.00988321907, 1)
+ traub_connect(this,  4,  7,   0.0174532778,  1.)
+ traub_connect(this,  5,  6,   0.00689334805, 1)
+ traub_connect(this,  5,  8,   0.00689334805,  1.)
+ traub_connect(this,  6,  9,   0.00689334805,  1.)
+ traub_connect(this,  7,  10,   0.0174532778,  1.)
+ traub_connect(this,  8,  11,   0.00689334805,  1.)
+ traub_connect(this,  11,  12,   0.00689334805,  1.)
+ traub_connect(this,  12,  13,   0.00689334805,  1.)
+ traub_connect(this,  13,  14,   0.00689334805,  1.)
+ traub_connect(this,  15,  16,   0.0250126876, 1)
+ traub_connect(this,  15,  17,   0.0250126876, 1)
+ traub_connect(this,  16,  17,   0.0174532778, 1)
+ traub_connect(this,  16,  18,   0.00988321907, 1)
+ traub_connect(this,  16,  19,   0.00988321907, 1)
+ traub_connect(this,  17,  20,   0.0174532778,  1.)
+ traub_connect(this,  18,  19,   0.00689334805, 1)
+ traub_connect(this,  18,  21,   0.00689334805,  1.)
+ traub_connect(this,  19,  22,   0.00689334805,  1.)
+ traub_connect(this,  20,  23,   0.0174532778,  1.)
+ traub_connect(this,  21,  24,   0.00689334805,  1.)
+ traub_connect(this,  24,  25,   0.00689334805,  1.)
+ traub_connect(this,  25,  26,   0.00689334805,  1.)
+ traub_connect(this,  26,  27,   0.00689334805,  1.)
+ traub_connect(this,  28,  29,   0.0250126876, 1)
+ traub_connect(this,  28,  30,   0.0250126876, 1)
+ traub_connect(this,  29,  30,   0.0174532778, 1)
+ traub_connect(this,  29,  31,   0.00988321907, 1)
+ traub_connect(this,  29,  32,   0.00988321907, 1)
+ traub_connect(this,  30,  33,   0.0174532778,  1.)
+ traub_connect(this,  31,  32,   0.00689334805, 1)
+ traub_connect(this,  31,  34,   0.00689334805,  1.)
+ traub_connect(this,  32,  35,   0.00689334805,  1.)
+ traub_connect(this,  33,  36,   0.0174532778,  1.)
+ traub_connect(this,  34,  37,   0.00689334805,  1.)
+ traub_connect(this,  37,  38,   0.00689334805,  1.)
+ traub_connect(this,  38,  39,   0.00689334805,  1.)
+ traub_connect(this,  39,  40,   0.00689334805,  1.)
+ traub_connect(this,  41,  42,   0.0250126876, 1)
+ traub_connect(this,  41,  43,   0.0250126876, 1)
+ traub_connect(this,  42,  43,   0.0174532778, 1)
+ traub_connect(this,  42,  44,   0.00988321907, 1)
+ traub_connect(this,  42,  45,   0.00988321907, 1)
+ traub_connect(this,  43,  46,   0.0174532778,  1.)
+ traub_connect(this,  44,  45,   0.00689334805, 1)
+ traub_connect(this,  44,  47,   0.00689334805,  1.)
+ traub_connect(this,  45,  48,   0.00689334805,  1.)
+ traub_connect(this,  46,  49,   0.0174532778,  1.)
+ traub_connect(this,  47,  50,   0.00689334805,  1.)
+ traub_connect(this,  50,  51,   0.00689334805,  1.)
+ traub_connect(this,  51,  52,   0.00689334805,  1.)
+ traub_connect(this,  52,  53,   0.00689334805,  1.)
+ traub_connect(this,  54,  55,   0.026078893,  1.)
+ traub_connect(this,  55,  56,   0.0185405311, 1)
+ traub_connect(this,  55,  58,   0.0185405311, 1)
+ traub_connect(this,  56,  57,   0.01570795,  1.)
+ traub_connect(this,  56,  58,   0.01570795, 1)
+ traub_connect(this,  58,  59,   0.01570795,  1.)
+ access comp[1] // handy statement if want to start gui's from nrnmainmenu
+ }
+         proc geom() {
+ // the "traub level" subsets are created and defined below
+ top_level =  9
+ objref level[top_level+1]
+ for i=0,top_level { level[i] = new SectionList() }
+  
+ comp[ 1] { level[ 1].append() L=  20. diam = 2*  7.5 }
+ comp[ 2] { level[ 2].append() L=  40. diam = 2*  1.06 }
+ comp[ 3] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 4] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 5] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 6] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 7] { level[ 4].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 8] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 9] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 10] { level[ 5].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 11] { level[ 6].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 12] { level[ 7].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 13] { level[ 8].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 14] { level[ 9].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 15] { level[ 2].append() L=  40. diam = 2*  1.06 }
+ comp[ 16] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 17] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 18] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 19] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 20] { level[ 4].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 21] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 22] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 23] { level[ 5].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 24] { level[ 6].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 25] { level[ 7].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 26] { level[ 8].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 27] { level[ 9].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 28] { level[ 2].append() L=  40. diam = 2*  1.06 }
+ comp[ 29] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 30] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 31] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 32] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 33] { level[ 4].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 34] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 35] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 36] { level[ 5].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 37] { level[ 6].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 38] { level[ 7].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 39] { level[ 8].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 40] { level[ 9].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 41] { level[ 2].append() L=  40. diam = 2*  1.06 }
+ comp[ 42] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 43] { level[ 3].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 44] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 45] { level[ 4].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 46] { level[ 4].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 47] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 48] { level[ 5].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 49] { level[ 5].append() L=  40. diam = 2*  0.666666667 }
+ comp[ 50] { level[ 6].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 51] { level[ 7].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 52] { level[ 8].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 53] { level[ 9].append() L=  40. diam = 2*  0.418972332 }
+ comp[ 54] { level[ 0].append() L=  50. diam = 2*  0.7 }
+ comp[ 55] { level[ 0].append() L=  50. diam = 2*  0.6 }
+ comp[ 56] { level[ 0].append() L=  50. diam = 2*  0.5 }
+ comp[ 57] { level[ 0].append() L=  50. diam = 2*  0.5 }
+ comp[ 58] { level[ 0].append() L=  50. diam = 2*  0.5 }
+ comp[ 59] { level[ 0].append() L=  50. diam = 2*  0.5 }
+ } 
+ // Here are some commonly used subsets of sections
+         objref all
+         proc subsets() { local i
+           objref Soma, Dendrites, Soma_Dendrites, Axon
+           objref all
+           Soma = new SectionList()
+           Dendrites = new SectionList()
+           Soma_Dendrites = new SectionList()
+           Axon = new SectionList()
+           for i=1,top_level {
+             forsec level[i] { // recall level 0 is axon, 1 is soma, higher are dends
+               Soma_Dendrites.append()
+                 if (i>1) {Dendrites.append()}
+             }
+           }
+           forsec level[1] {
+             Soma.append()
+           }
+           forsec level[0] { Axon.append() }
+           all = new SectionList()
+           for i=1, 59 comp[i] all.append()
+          }
+ 
+        proc shape() {
+ 
+    comp[1] {pt3dclear() pt3dadd(0.0, 0.0, 0.0, 15.0) pt3dadd(0.0, 10.0, 0.0, 15.0)}
+    comp[1] {pt3dadd(-4.371139E-7, 20.0, 0.0, 15.0)}
+    comp[54] {pt3dclear() pt3dadd(4.371139E-7, 0.0, 0.0, 1.4) pt3dadd(-3.7745E-7, -25.0, 0.0, 1.4)}
+    comp[54] {pt3dadd(-1.1920139E-6, -50.0, 0.0, 1.4)}
+    comp[41] {pt3dclear() pt3dadd(0.0, 20.0, 0.0, 2.12) pt3dadd(-16.0, 8.0, 0.0, 2.12)}
+    comp[41] {pt3dadd(-32.0, -4.0, 0.0, 2.12)}
+    comp[28] {pt3dclear() pt3dadd(0.0, 20.0, 0.0, 2.12) pt3dadd(16.0, 8.0, 0.0, 2.12)}
+    comp[28] {pt3dadd(32.0, -4.0, 0.0, 2.12)}
+    comp[15] {pt3dclear() pt3dadd(0.0, 20.0, 0.0, 2.12) pt3dadd(0.0, 32.0, -16.0, 2.12)}
+    comp[15] {pt3dadd(0.0, 44.0, -32.0, 2.12)}
+    comp[2] {pt3dclear() pt3dadd(0.0, 20.0, 0.0, 2.12) pt3dadd(0.0, 32.0, 16.0, 2.12)}
+    comp[2] {pt3dadd(0.0, 44.0, 32.0, 2.12)}
+    comp[55] {pt3dclear() pt3dadd(-1.1920139E-6, -50.0, 0.0, 1.2) pt3dadd(-3.9139263E-6, -75.0, 0.0, 1.2)}
+    comp[55] {pt3dadd(-6.635839E-6, -100.0, 0.0, 1.2)}
+    comp[43] {pt3dclear() pt3dadd(-32.0, -4.0, 0.0, 1.33333) pt3dadd(-32.0, -16.0, -16.0, 1.33333)}
+    comp[43] {pt3dadd(-32.000004, -27.999973, -31.999964, 1.33333)}
+    comp[42] {pt3dclear() pt3dadd(-32.0, -4.0, 0.0, 1.33333) pt3dadd(-48.0, -16.0, 0.0, 1.33333)}
+    comp[42] {pt3dadd(-64.0, -28.0, 0.0, 1.33333)}
+    comp[30] {pt3dclear() pt3dadd(32.0, -4.0, 0.0, 1.33333) pt3dadd(32.0, -16.0, 16.0, 1.33333)}
+    comp[30] {pt3dadd(32.000084, -28.0, 32.00004, 1.33333)}
+    comp[29] {pt3dclear() pt3dadd(32.0, -4.0, 0.0, 1.33333) pt3dadd(48.0, -16.0, 0.0, 1.33333)}
+    comp[29] {pt3dadd(64.0, -28.0, 0.0, 1.33333)}
+    comp[17] {pt3dclear() pt3dadd(0.0, 44.0, -32.0, 1.33333) pt3dadd(-16.0, 56.0, -32.0, 1.33333)}
+    comp[17] {pt3dadd(-32.000008, 68.0, -32.000004, 1.33333)}
+    comp[16] {pt3dclear() pt3dadd(0.0, 44.0, -32.0, 1.33333) pt3dadd(0.0, 56.0, -48.0, 1.33333)}
+    comp[16] {pt3dadd(0.0, 68.0, -64.0, 1.33333)}
+    comp[4] {pt3dclear() pt3dadd(0.0, 44.0, 32.0, 1.33333) pt3dadd(16.0, 56.0, 32.0, 1.33333)}
+    comp[4] {pt3dadd(31.999998, 68.0, 32.0, 1.33333)}
+    comp[3] {pt3dclear() pt3dadd(0.0, 44.0, 32.0, 1.33333) pt3dadd(0.0, 56.0, 48.0, 1.33333)}
+    comp[3] {pt3dadd(0.0, 68.0, 64.0, 1.33333)}
+    comp[58] {pt3dclear() pt3dadd(-6.635839E-6, -100.0, 0.0, 1.0) pt3dadd(-9.735475, -123.02701, 0.0, 1.0)}
+    comp[58] {pt3dadd(-19.470892, -146.053, 0.0, 1.0)}
+    comp[56] {pt3dclear() pt3dadd(-6.635839E-6, -100.0, 0.0, 1.0) pt3dadd(9.735456, -123.02701, 0.0, 1.0)}
+    comp[56] {pt3dadd(19.47091, -146.053, 0.0, 1.0)}
+    comp[46] {pt3dclear() pt3dadd(-32.000004, -27.999973, -31.999964, 1.33333) pt3dadd(-31.999994, -39.99996, -47.99993, 1.33333)}
+    comp[46] {pt3dadd(-32.000057, -51.99994, -63.999985, 1.33333)}
+    comp[45] {pt3dclear() pt3dadd(-64.0, -28.0, 0.0, 0.837945) pt3dadd(-64.0, -40.0, 16.0, 0.837945)}
+    comp[45] {pt3dadd(-63.99984, -51.99975, 31.999928, 0.837945)}
+    comp[44] {pt3dclear() pt3dadd(-64.0, -28.0, 0.0, 0.837945) pt3dadd(-76.0, -44.0, 0.0, 0.837945)}
+    comp[44] {pt3dadd(-88.00005, -59.999695, -1.6570774E-4, 0.837945)}
+    comp[33] {pt3dclear() pt3dadd(32.000084, -28.0, 32.00004, 1.33333) pt3dadd(32.000126, -39.999954, 47.999992, 1.33333)}
+    comp[33] {pt3dadd(31.999937, -51.999847, 63.999756, 1.33333)}
+    comp[32] {pt3dclear() pt3dadd(64.0, -28.0, 0.0, 0.837945) pt3dadd(64.0, -40.0, -16.0, 0.837945)}
+    comp[32] {pt3dadd(63.99987, -51.99968, -31.999638, 0.837945)}
+    comp[31] {pt3dclear() pt3dadd(64.0, -28.0, 0.0, 0.837945) pt3dadd(76.0, -44.0, 0.0, 0.837945)}
+    comp[31] {pt3dadd(88.000046, -60.00023, 0.0, 0.837945)}
+    comp[20] {pt3dclear() pt3dadd(-32.000008, 68.0, -32.000004, 1.33333) pt3dadd(-47.999744, 79.99989, -32.000023, 1.33333)}
+    comp[20] {pt3dadd(-63.99968, 91.99982, -32.00002, 1.33333)}
+    comp[19] {pt3dclear() pt3dadd(0.0, 68.0, -64.0, 0.837945) pt3dadd(12.0, 84.0, -64.0, 0.837945)}
+    comp[19] {pt3dadd(24.00037, 100.00037, -63.999958, 0.837945)}
+    comp[18] {pt3dclear() pt3dadd(0.0, 68.0, -64.0, 0.837945) pt3dadd(0.0, 84.0, -76.0, 0.837945)}
+    comp[18] {pt3dadd(-1.7517991E-4, 99.99988, -87.99992, 0.837945)}
+    comp[7] {pt3dclear() pt3dadd(31.999998, 68.0, 32.0, 1.33333) pt3dadd(47.99968, 79.99977, 31.999996, 1.33333)}
+    comp[7] {pt3dadd(63.999664, 91.99977, 31.999992, 1.33333)}
+    comp[6] {pt3dclear() pt3dadd(0.0, 68.0, 64.0, 0.837945) pt3dadd(-12.0, 84.0, 64.0, 0.837945)}
+    comp[6] {pt3dadd(-24.00005, 99.999725, 64.00002, 0.837945)}
+    comp[5] {pt3dclear() pt3dadd(0.0, 68.0, 64.0, 0.837945) pt3dadd(0.0, 84.0, 76.0, 0.837945)}
+    comp[5] {pt3dadd(-5.235506E-5, 99.999916, 87.999954, 0.837945)}
+    comp[59] {pt3dclear() pt3dadd(-19.470892, -146.053, 0.0, 1.0) pt3dadd(-29.206392, -169.08, 0.0, 1.0)}
+    comp[59] {pt3dadd(-38.94189, -192.106, 0.0, 1.0)}
+    comp[57] {pt3dclear() pt3dadd(19.47091, -146.053, 0.0, 1.0) pt3dadd(29.206406, -169.08, 0.0, 1.0)}
+    comp[57] {pt3dadd(38.941807, -192.106, 0.0, 1.0)}
+    comp[49] {pt3dclear() pt3dadd(-32.000057, -51.99994, -63.999985, 1.33333) pt3dadd(-31.999996, -63.99991, -79.99986, 1.33333)}
+    comp[49] {pt3dadd(-32.000145, -75.99956, -95.99962, 1.33333)}
+    comp[48] {pt3dclear() pt3dadd(-63.99984, -51.99975, 31.999928, 0.837945) pt3dadd(-63.99974, -63.999542, 47.99981, 0.837945)}
+    comp[48] {pt3dadd(-63.999584, -75.99931, 63.99976, 0.837945)}
+    comp[47] {pt3dclear() pt3dadd(-88.00005, -59.999695, -1.6570774E-4, 0.837945) pt3dadd(-100.00012, -75.99941, -3.2243066E-4, 0.837945)}
+    comp[47] {pt3dadd(-112.000145, -91.999115, -4.6624226E-4, 0.837945)}
+    comp[36] {pt3dclear() pt3dadd(31.999937, -51.999847, 63.999756, 1.33333) pt3dadd(32.000328, -64.00009, 80.00027, 1.33333)}
+    comp[36] {pt3dadd(32.000214, -75.99994, 96.00001, 1.33333)}
+    comp[35] {pt3dclear() pt3dadd(63.99987, -51.99968, -31.999638, 0.837945) pt3dadd(63.99988, -63.999992, -48.000046, 0.837945)}
+    comp[35] {pt3dadd(63.999767, -75.999664, -63.999664, 0.837945)}
+    comp[34] {pt3dclear() pt3dadd(88.000046, -60.00023, 0.0, 0.837945) pt3dadd(100.00014, -75.99946, 0.0, 0.837945)}
+    comp[34] {pt3dadd(112.00018, -91.99966, 0.0, 0.837945)}
+    comp[23] {pt3dclear() pt3dadd(-63.99968, 91.99982, -32.00002, 1.33333) pt3dadd(-79.99957, 103.99982, -32.000046, 1.33333)}
+    comp[23] {pt3dadd(-96.000435, 116.00012, -31.999968, 1.33333)}
+    comp[22] {pt3dclear() pt3dadd(24.00037, 100.00037, -63.999958, 0.837945) pt3dadd(36.000114, 115.99994, -63.999935, 0.837945)}
+    comp[22] {pt3dadd(48.000484, 132.0003, -63.999893, 0.837945)}
+    comp[21] {pt3dclear() pt3dadd(-1.7517991E-4, 99.99988, -87.99992, 0.837945) pt3dadd(-4.1945462E-4, 115.99981, -99.99989, 0.837945)}
+    comp[21] {pt3dadd(-6.5721705E-4, 131.99974, -111.99985, 0.837945)}
+    comp[10] {pt3dclear() pt3dadd(63.999664, 91.99977, 31.999992, 1.33333) pt3dadd(79.99965, 103.99977, 31.999992, 1.33333)}
+    comp[10] {pt3dadd(95.999664, 115.99977, 31.999996, 1.33333)}
+    comp[9] {pt3dclear() pt3dadd(-24.00005, 99.999725, 64.00002, 0.837945) pt3dadd(-36.00011, 115.999435, 64.00003, 0.837945)}
+    comp[9] {pt3dadd(-48.000313, 132.00015, 64.00001, 0.837945)}
+    comp[8] {pt3dclear() pt3dadd(-5.235506E-5, 99.999916, 87.999954, 0.837945) pt3dadd(-1.4170882E-4, 115.99965, 99.99978, 0.837945)}
+    comp[8] {pt3dadd(-3.9500205E-4, 131.99973, 111.99991, 0.837945)}
+    comp[50] {pt3dclear() pt3dadd(-112.000145, -91.999115, -4.6624226E-4, 0.837945) pt3dadd(-124.00055, -107.99976, -4.091831E-4, 0.837945)}
+    comp[50] {pt3dadd(-136.00061, -123.99945, -5.919892E-4, 0.837945)}
+    comp[37] {pt3dclear() pt3dadd(112.00018, -91.99966, 0.0, 0.837945) pt3dadd(124.00022, -107.99986, 0.0, 0.837945)}
+    comp[37] {pt3dadd(136.00027, -124.00009, 0.0, 0.837945)}
+    comp[24] {pt3dclear() pt3dadd(-6.5721705E-4, 131.99974, -111.99985, 0.837945) pt3dadd(-0.0010701425, 147.99988, -123.99997, 0.837945)}
+    comp[24] {pt3dadd(-3.7628168E-4, 164.00018, -136.0002, 0.837945)}
+    comp[11] {pt3dclear() pt3dadd(-3.9500205E-4, 131.99973, 111.99991, 0.837945) pt3dadd(-6.2802254E-4, 147.99982, 124.00003, 0.837945)}
+    comp[11] {pt3dadd(3.6693433E-5, 164.00029, 136.00023, 0.837945)}
+    comp[51] {pt3dclear() pt3dadd(-136.00061, -123.99945, -5.919892E-4, 0.837945) pt3dadd(-148.00061, -139.99915, -7.203825E-4, 0.837945)}
+    comp[51] {pt3dadd(-160.0007, -155.99886, -8.9160044E-4, 0.837945)}
+    comp[38] {pt3dclear() pt3dadd(136.00027, -124.00009, 0.0, 0.837945) pt3dadd(148.00035, -139.9993, 0.0, 0.837945)}
+    comp[38] {pt3dadd(160.00012, -155.99953, 0.0, 0.837945)}
+    comp[25] {pt3dclear() pt3dadd(-3.7628168E-4, 164.00018, -136.0002, 0.837945) pt3dadd(-4.955236E-4, 179.99997, -148.00005, 0.837945)}
+    comp[25] {pt3dadd(-6.185023E-4, 195.9998, -159.99991, 0.837945)}
+
+    comp[12] {pt3dclear() pt3dadd(3.6693433E-5, 164.00029, 136.00023, 0.837945) pt3dadd(1.4269038E-4, 179.99968, 147.99976, 0.837945)}
+    comp[12] {pt3dadd(-1.15835806E-4, 195.99976, 159.99988, 0.837945)}
+    comp[52] {pt3dclear() pt3dadd(-160.0007, -155.99886, -8.9160044E-4, 0.837945) pt3dadd(-172.0008, -171.99857, -0.0010713129, 0.837945)}
+    comp[52] {pt3dadd(-184.00107, -187.99918, -9.6784125E-4, 0.837945)}
+    comp[39] {pt3dclear() pt3dadd(160.00012, -155.99953, 0.0, 0.837945) pt3dadd(172.00076, -171.99973, 0.0, 0.837945)}
+    comp[39] {pt3dadd(184.0004, -187.99992, 0.0, 0.837945)}
+    comp[26] {pt3dclear() pt3dadd(-6.185023E-4, 195.9998, -159.99991, 0.837945) pt3dadd(-7.454591E-4, 211.99959, -171.99977, 0.837945)}
+    comp[26] {pt3dadd(-8.9209125E-4, 227.99937, -183.99963, 0.837945)}
+    comp[13] {pt3dclear() pt3dadd(-1.15835806E-4, 195.99976, 159.99988, 0.837945) pt3dadd(-3.677581E-4, 211.99985, 172.0, 0.837945)}
+    comp[13] {pt3dadd(-6.1248185E-4, 227.99992, 184.00015, 0.837945)}
+    comp[53] {pt3dclear() pt3dadd(-184.00107, -187.99918, -9.6784125E-4, 0.837945) pt3dadd(-196.00117, -203.99889, -0.0011438904, 0.837945)}
+    comp[53] {pt3dadd(-208.00125, -219.99861, -0.0013205758, 0.837945)}
+    comp[40] {pt3dclear() pt3dadd(184.0004, -187.99992, 0.0, 0.837945) pt3dadd(196.0011, -203.99918, 0.0, 0.837945)}
+    comp[40] {pt3dadd(208.00076, -219.99939, 0.0, 0.837945)}
+    comp[27] {pt3dclear() pt3dadd(-8.9209125E-4, 227.99937, -183.99963, 0.837945) pt3dadd(-8.054877E-4, 244.0003, -196.00034, 0.837945)}
+    comp[27] {pt3dadd(-9.225024E-4, 260.00012, -208.00021, 0.837945)}
+    comp[14] {pt3dclear() pt3dadd(-6.1248185E-4, 227.99992, 184.00015, 0.837945) pt3dadd(-8.7018224E-4, 244.00003, 196.00026, 0.837945)}
+    comp[14] {pt3dadd(1.5117969E-4, 259.9998, 207.99985, 0.837945)}
+
+ }
+         proc biophys() {
+ // 
+ //       insert the mechanisms and assign max conductances
+ // 
+ forsec all { insert pas
+insert extracellular
+	xraxial=1e+09 
+	xg=1e+09 
+	xc=0 
+	e_extracellular  }   // g_pas has two values; soma-dend,axon
+ forsec level[ 0] {
+       insert naf2
+       gbar_naf2 =   0.4
+       insert kdr_fs
+       gbar_kdr_fs =   0.4
+       insert ka
+       gbar_ka =   0.001
+       insert k2
+       gbar_k2 =   0.0005
+ }
+ forsec level[ 1] {
+       insert naf2
+       gbar_naf2 =   0.06
+       insert nap
+       gbar_nap =   0.0006
+       insert kdr_fs
+       gbar_kdr_fs =   0.1
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0001
+//       insert cat
+//       gbar_cat =   0.0001
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.02
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   260000.
+ }
+ forsec level[ 2] {
+       insert naf2
+       gbar_naf2 =   0.06
+       insert nap
+       gbar_nap =   0.0006
+       insert kdr_fs
+       gbar_kdr_fs =   0.1
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0001
+//       insert cat
+//       gbar_cat =   0.0001
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 3] {
+       insert naf2
+       gbar_naf2 =   0.06
+       insert nap
+       gbar_nap =   0.0006
+       insert kdr_fs
+       gbar_kdr_fs =   0.1
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0001
+//       insert cat
+//       gbar_cat =   0.0001
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 4] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   0.0001
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 5] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 6] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 7] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 8] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec level[ 9] {
+       insert naf2
+       gbar_naf2 =   0.01
+       insert nap
+       gbar_nap =   0.0001
+       insert kdr_fs
+       gbar_kdr_fs =   0.01
+       insert kc_fast
+       gbar_kc_fast =   0.025
+       insert ka
+       gbar_ka =   0.001
+//       insert km
+//       gbar_km =   0.0005
+//       insert k2
+//       gbar_k2 =   0.0005
+//       insert kahp_slower
+//       gbar_kahp_slower =   0.0001
+       insert cal
+       gbar_cal =   0.0002
+//       insert cat
+//       gbar_cat =   0.0002
+//       insert ar
+//       gbar_ar =   2.5E-05
+       insert cad
+       // *** ca diffusion: beta=1/tau
+       beta_cad  =   0.05
+       // cafor(I) (FORTRAN) converted to phi (NEURON)
+       phi_cad =   520000.
+ }
+ forsec all {
+    cm =   1.  // assign global specific capac.
+ }
+ // 
+ //  passive membrane resistance (leak) and axial resistance
+ // 
+ forsec Soma_Dendrites {
+    g_pas =   4.E-05
+    Ra =   200.
+ }
+ forsec Axon {
+    g_pas =   0.001
+    Ra =   100.
+ }
+ ceiling_cad = 1e6 //  nearly unlimited Ca concentration
+ // print "made it to end of initialization from SCORTMAJ_FRB()"
+ }  // end of biophys
+ 
+ // Compartment Area: Dendritic.spines double area of
+ // dend. membrane, which in Traubs method is equivalent to
+ // only multiplying all dend. max conductances by two
+ // (the area is doubled but the volume is const.)
+ proc double_dend_cond() {
+   spine_area_multiplier = 2
+   forsec Dendrites {
+        if (ismembrane("nap")) { gbar_nap *= spine_area_multiplier }
+        if (ismembrane("napf")) { gbar_napf *= spine_area_multiplier }
+        if (ismembrane("napf_tcr")) { gbar_napf_tcr *= spine_area_multiplier }
+        if (ismembrane("naf2")) { gbar_naf2 *= spine_area_multiplier }
+        if (ismembrane("naf2_tcr")) { gbar_naf2_tcr *= spine_area_multiplier }
+        if (ismembrane("naf22")) { gbar_naf22 *= spine_area_multiplier }
+        if (ismembrane("kc_fast")) { gbar_kc_fast *= spine_area_multiplier }
+        if (ismembrane("kc_fast_fast")) { gbar_kc_fast_fast *= spine_area_multiplier }
+        if (ismembrane("kahp")) { gbar_kahp *= spine_area_multiplier }
+        if (ismembrane("kahp_slower")) { gbar_kahp_slower *= spine_area_multiplier }
+        if (ismembrane("km")) { gbar_km *= spine_area_multiplier }
+        if (ismembrane("kdr_fs")) { gbar_kdr_fs *= spine_area_multiplier }
+        if (ismembrane("kdr_fs_fs")) { gbar_kdr_fs_fs *= spine_area_multiplier }
+        if (ismembrane("ka")) { gbar_ka *= spine_area_multiplier }
+        if (ismembrane("ka_ib")) { gbar_ka_ib *= spine_area_multiplier }
+        if (ismembrane("k2")) { gbar_k2 *= spine_area_multiplier }
+        if (ismembrane("cal")) { gbar_cal *= spine_area_multiplier }
+        if (ismembrane("cat")) { gbar_cat *= spine_area_multiplier }
+        if (ismembrane("cat_a")) { gbar_cat_a *= spine_area_multiplier }
+        if (ismembrane("ar")) { gbar_ar *= spine_area_multiplier }
+        if (ismembrane("pas")) { g_pas *= spine_area_multiplier }
+        cm = cm * spine_area_multiplier
+   }
+ }
+ // double_dend_cond()  // run for cells w/ spines
+ 
+        proc position() { local i
+ // comp switched to comp[1] since 0 deleted
+         forsec all { for i = 0, n3d()-1 {
+     pt3dchange(i, $1-x+x3d(i), \
+      $2-y+y3d(i), $3-z+z3d(i),diam3d(i))
+        }
+		}
+         x=$1 y=$2 z=$3
+        }
+         proc connect2target() { 
+  // $o1 targ point process, $o2 returned NetCon
+           comp[presyn_comp] $o2 = new NetCon(&v(1),$o1)
+	$o2.threshold = 0
+         }
+         objref syn_
+         proc synapses() {
+         // place for each compartment that has input
+         // statements like 
+ //comp[3] syn_=new AlphaSynKinT(1) synlist.append(syn_)
+ //comp[4] syn_=new NMDA(1) synlist.append(syn_)
+         }
+ 
+ // is not an artificial cell:
+      func is_art() { return 0 }
+ 
+ 
+ 
+         proc more_adjustments() {
+ forsec all {
+        if (ismembrane("naf2")) {fastNa_shift_naf2=-3.5}
+    // global reversal potentials
+    ek =  -100.
+    e_pas =  -65.
+    ena =   50.
+    vca =   125.
+    forsec all if (ismembrane("ar")) erev_ar =  -40.
+    e_gaba_a =  -75.
+ }
+     // more extended initializations
+     // Note: the following currents are not
+     // present in fast spiking and LTS interneurons
+ // Would be slightly more efficient to not include them
+     forsec all {
+         if (ismembrane("nap")) {gbar_nap = 0.0}
+         if (ismembrane("k2")) {gbar_k2 = 0.0}
+         if (ismembrane("km")) {gbar_km = 0.0}
+         if (ismembrane("kahp")) {gbar_kahp = 0.0}
+         if (ismembrane("kahp_slower")) {gbar_kahp_slower = 0.0}
+         if (ismembrane("cat")) {gbar_cat = 0.0}
+         if (ismembrane("ar")) {gbar_ar = 0.0}
+    }
+ }
+  endtemplate supbask
