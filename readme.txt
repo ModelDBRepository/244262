@@ -14,3 +14,5 @@ Note: to run, you must first unzip Iintra.dat.zip
 
 Edits:
 20220519 - zipped Iintra.dat to allow storing on GitHub
+20220523 - updated MOD files to contain valid C++ and be compatible
+           with the upcoming versions 8.2 and 9.0 of NEURON.
