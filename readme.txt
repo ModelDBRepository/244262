@@ -16,3 +16,5 @@ Edits:
 20220519 - zipped Iintra.dat to allow storing on GitHub
 20220523 - updated MOD files to contain valid C++ and be compatible
            with the upcoming versions 8.2 and 9.0 of NEURON.
+20230420 - updated MOD files for compatibility with the new data
+           structures in the upcoming version 9.0 of NEURON.
