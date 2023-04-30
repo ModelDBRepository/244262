@@ -24,6 +24,15 @@ NEURON { SUFFIX nothing }
 
 VERBATIM
 const char* secname();
+#ifdef NRN_MECHANISM_DATA_IS_SOA
+#define get_nnode(sec) _nrn_mechanism_get_nnode(sec)
+#define get_node(sec, node_index) _nrn_mechanism_get_node(sec, node_index)
+#define get_thread(node) _nrn_mechanism_get_thread(node)
+#else
+#define get_nnode(sec) sec->nnode
+#define get_node(sec, node_index) sec->pnode[node_index]
+#define get_thread(node) node->_nt
+#endif
 ENDVERBATIM
 
 PROCEDURE scale_connection_coef(x, factor) {
@@ -40,13 +49,13 @@ VERBATIM {
 	/*printf("scale_connection_coefs %s(%g) %d\n", secname(sec), _lx, sec->nnode);*/
 	/* assumes 0 end of child connected to parent */
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int) (_lx*(double)(get_nnode(sec) - 1)));
 	}
 	/*printf("%g %g\n", NODEA(nd), NODEB(nd));*/
 #if defined(t)
-	_nt = nd->_nt;
+	_nt = get_thread(nd);
 #endif
 	NODEA(nd) *= _lfactor;
 	NODEB(nd) *= _lfactor;
